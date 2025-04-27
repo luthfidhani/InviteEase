@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: inviteease-app
+    command: /app/docker/entrypoint.sh
+    volumes:
+      - .:/app
+      - ./data:/app/data          # DB & staticfiles
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+volumes:
+  data:

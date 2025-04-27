@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</head>
+<body>
+  <h1 id="animatedElement" style="opacity:0;">Konten Anda</h1>
+
+  <script>
+    const element = document.getElementById('animatedElement');
+    
+    // Fade in
+    element.style.opacity = '1';
+    element.classList.add('animate__animated', 'animate__fadeIn');
+    
+    // Setelah fade in selesai (1 detik)
+    setTimeout(() => {
+      // Hapus class fadeIn
+      element.classList.remove('animate__fadeIn');
+      
+      // Tunggu 6 detik, lalu fade out
+      setTimeout(() => {
+        element.classList.add('animate__fadeOut');
+        
+        // Setelah fade out selesai (1 detik), sembunyikan elemen
+        setTimeout(() => {
+          element.style.opacity = '0';
+        }, 1000);
+      }, 6000);
+    }, 1000);
+  </script>
+</body>
+</html>

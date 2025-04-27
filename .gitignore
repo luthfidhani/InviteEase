@@ -1,0 +1,6 @@
+staticfiles/
+.env
+.venv/
+data/
+.DS_Store
+__pycache__/
