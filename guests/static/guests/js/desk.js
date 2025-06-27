@@ -95,7 +95,7 @@
                 data.results.forEach(g => {
                   const opt = document.createElement('div');
                   opt.className = 'px-4 py-2 cursor-pointer hover:bg-blue-100 flex flex-col text-left';
-                  opt.innerHTML = `<span class='font-semibold text-gray-800'>${g.name}</span><span class='text-xs text-gray-500'>${g.invitation_code} &middot; ${g.status}</span>`;
+                  opt.innerHTML = `<span class='font-semibold text-gray-800'>${g.name}</span><span class='text-xs text-gray-500'>${g.invitation_code} &middot; ${g.status}</span>${g.detail ? `<span class='text-xs text-rose-700 italic'>${g.detail}</span>` : ''}`;
                   opt.addEventListener('mousedown', function(e) {
                     e.preventDefault();
                     input.value = g.invitation_code;

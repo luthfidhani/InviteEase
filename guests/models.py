@@ -24,6 +24,7 @@ class Guest(models.Model):
     desk_id = models.PositiveSmallIntegerField(null=True, blank=True)
     screen_id = models.PositiveSmallIntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)
+    detail = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

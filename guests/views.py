@@ -74,6 +74,7 @@ def api_guest_search(request):
             'name': g.name,
             'invitation_code': g.invitation_code,
             'status': g.status,
+            'detail': g.detail,
         }
         for g in guests
     ]
