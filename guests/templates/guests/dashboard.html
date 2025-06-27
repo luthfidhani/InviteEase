@@ -25,6 +25,19 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-white/90 shadow sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-4">
+          <span class="font-bold text-xl text-primary-600">InviteEase</span>
+          <a href="/" class="px-3 py-2 rounded {% if request.path == '/' or request.path == '/dashboard/' %}bg-blue-100 text-primary-700 font-semibold{% endif %} hover:bg-blue-50 transition">Dashboard</a>
+          <a href="/guests/list/" class="px-3 py-2 rounded {% if request.path|slice:':13' == '/guests/list/' %}bg-blue-100 text-primary-700 font-semibold{% endif %} hover:bg-blue-50 transition">Guest List</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
   <div class="max-w-4xl mx-auto py-10 px-4">
     <h1 class="mb-8 text-3xl md:text-4xl font-bold text-gray-800 flex items-center gap-2">
       <span class="text-primary-600">📊</span> InviteEase Dashboard
@@ -60,6 +73,9 @@
       </a>
       <a href="/admin/" class="flex-1 sm:flex-none border-2 border-gray-700 text-gray-800 font-semibold py-3 px-6 rounded-xl shadow text-center transition-all duration-200 text-lg hover:bg-gray-800 hover:text-white">
         Admin Panel
+      </a>
+      <a href="/guests/list/" class="flex-1 sm:flex-none bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg text-center transition-all duration-200 text-lg">
+        Guest List
       </a>
     </div>
   </div>

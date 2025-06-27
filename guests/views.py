@@ -7,6 +7,7 @@ from .forms import CheckInForm
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 
 
 def dashboard_view(request):
@@ -79,3 +80,21 @@ def api_guest_search(request):
         for g in guests
     ]
     return JsonResponse({'results': results})
+
+def guest_list_view(request):
+    sort = request.GET.get('sort', 'name')
+    dir = request.GET.get('dir', 'asc')
+    valid_cols = ['name', 'invitation_code', 'status', 'checkin', 'checkin_at', 'desk_id', 'detail']
+    if sort not in valid_cols:
+        sort = 'name'
+    order = sort if dir == 'asc' else f'-{sort}'
+    guests = Guest.objects.all().order_by(order)
+    paginator = Paginator(guests, 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'guests/guest_list.html', {
+        'page_obj': page_obj,
+        'sort': sort,
+        'dir': dir,
+        'valid_cols': valid_cols,
+    })

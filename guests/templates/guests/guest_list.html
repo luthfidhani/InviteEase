@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Guest List · InviteEase</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+  <!-- Navbar -->
+  <nav class="bg-white/90 shadow sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-4">
+          <span class="font-bold text-xl text-primary-600">InviteEase</span>
+          <a href="/" class="px-3 py-2 rounded {% if request.path == '/' or request.path == '/dashboard/' %}bg-blue-100 text-primary-700 font-semibold{% endif %} hover:bg-blue-50 transition">Dashboard</a>
+          <a href="/guests/list/" class="px-3 py-2 rounded {% if request.path|slice:':13' == '/guests/list/' %}bg-blue-100 text-primary-700 font-semibold{% endif %} hover:bg-blue-50 transition">Guest List</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="max-w-6xl mx-auto py-10 px-4">
+    <h1 class="text-3xl font-bold mb-8 text-gray-800">Guest List</h1>
+    <div class="overflow-x-auto rounded-xl shadow-lg bg-white/90">
+      <table class="min-w-full text-sm text-left">
+        <thead>
+          <tr class="bg-gradient-to-r from-blue-100 to-indigo-100 text-gray-700">
+            {% for col in valid_cols %}
+              <th class="px-4 py-3 font-semibold cursor-pointer select-none whitespace-nowrap">
+                <a href="?sort={{ col }}&dir={% if sort == col and dir == 'asc' %}desc{% else %}asc{% endif %}" class="flex items-center gap-1">
+                  {{ col|title|cut:"_" }}
+                  {% if sort == col %}
+                    {% if dir == 'asc' %}
+                      <span>&uarr;</span>
+                    {% else %}
+                      <span>&darr;</span>
+                    {% endif %}
+                  {% endif %}
+                </a>
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for guest in page_obj.object_list %}
+            <tr class="border-b hover:bg-blue-50">
+              <td class="px-4 py-2 font-bold text-gray-800">{{ guest.name }}</td>
+              <td class="px-4 py-2">{{ guest.invitation_code }}</td>
+              <td class="px-4 py-2">{{ guest.status|title }}</td>
+              <td class="px-4 py-2">
+                {% if guest.checkin %}
+                  <span class="inline-block px-2 py-1 text-xs rounded bg-green-100 text-green-700">Yes</span>
+                {% else %}
+                  <span class="inline-block px-2 py-1 text-xs rounded bg-red-100 text-red-700">No</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-2">{{ guest.checkin_at|date:'Y-m-d H:i' }}</td>
+              <td class="px-4 py-2">{{ guest.desk_id }}</td>
+              <td class="px-4 py-2 text-gray-600">{{ guest.detail }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No guests found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-6">
+      <div class="text-sm text-gray-600">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </div>
+      <div class="flex gap-2">
+        {% if page_obj.has_previous %}
+          <a href="?page=1&sort={{ sort }}&dir={{ dir }}" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">First</a>
+          <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort }}&dir={{ dir }}" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Prev</a>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+          {% if i >= page_obj.number|add:'-2' and i <= page_obj.number|add:'2' %}
+            {% if i == page_obj.number %}
+              <span class="px-3 py-1 rounded bg-blue-500 text-white">{{ i }}</span>
+            {% else %}
+              <a href="?page={{ i }}&sort={{ sort }}&dir={{ dir }}" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">{{ i }}</a>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&sort={{ sort }}&dir={{ dir }}" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Next</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort }}&dir={{ dir }}" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Last</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html> 
