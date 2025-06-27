@@ -20,9 +20,11 @@ help:
 build:            ## Build image
 	$(COMPOSE) build
 
-up:               ## Start services
+up-d:             ## Start services in detached mode
 	$(COMPOSE) up -d
 
+up:               ## Start services
+	$(COMPOSE) up
 down:             ## Stop & remove containers
 	$(COMPOSE) down
 
