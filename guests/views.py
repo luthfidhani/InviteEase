@@ -6,6 +6,7 @@ from .models import Guest
 from .forms import CheckInForm
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.http import JsonResponse
 
 
 def dashboard_view(request):
@@ -61,3 +62,19 @@ def desk_view(request, desk_id: int):
 def screen_view(request, screen_id: int):
     # Sebentar: template kosong, nanti di Tahap 5
     return render(request, "guests/screen.html", {"screen_id": screen_id})
+
+def api_guest_search(request):
+    q = request.GET.get('q', '').strip()
+    if not q:
+        return JsonResponse({'results': []})
+    guests = Guest.objects.filter(name__icontains=q).order_by('name')[:10]
+    results = [
+        {
+            'id': str(g.id),
+            'name': g.name,
+            'invitation_code': g.invitation_code,
+            'status': g.status,
+        }
+        for g in guests
+    ]
+    return JsonResponse({'results': results})
