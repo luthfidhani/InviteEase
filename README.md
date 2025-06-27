@@ -151,8 +151,19 @@ Pull requests are welcome! Please open an issue first to discuss major changes.
 
 > Made with ❤️ by Luthfi — may your guests feel truly welcomed!
 
-## Screenshot
-![image](https://github.com/user-attachments/assets/c8a005a5-e3ee-4a08-b0ad-e126c98070ac)
-![image](https://github.com/user-attachments/assets/377af6f0-7b9f-44c2-9ea4-4e9881d15d26)
-![image](https://github.com/user-attachments/assets/8b636611-f9d2-4b25-9976-802569f917a7)
-![image](https://github.com/user-attachments/assets/20e9698b-020d-434f-b6e6-c2a1401e15d1)
+## Screenshots
+### Dashboard
+![Dashboard](screenshots/1.png)
+
+### Guest List
+![Guest List](screenshots/2.png)
+
+### Check-in Desk
+![Check-in Desk](screenshots/3.png)
+
+### Display Screen
+![Display Screen](screenshots/4.png)
+
+### Admin Panel
+![Admin Panel](screenshots/5.png)
+
