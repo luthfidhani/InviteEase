@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import localtime
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.db.models import Count, Q
 from .models import Guest
 from .forms import CheckInForm
@@ -13,6 +16,30 @@ import random
 import string
 
 
+@require_http_methods(["GET", "POST"])
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect(request.GET.get("next") or "/")
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        next_url = request.POST.get("next") or "/"
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_active:
+            login(request, user)
+            return redirect(next_url if next_url.startswith("/") else "/")
+        messages.error(request, "Login gagal.")
+    return render(request, "guests/login.html", {"next": request.GET.get("next", "")})
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.info(request, "Anda sudah keluar.")
+    return redirect("guests:login")
+
+
+@login_required
 def dashboard_view(request):
     stats = Guest.objects.aggregate(
         total=Count("id"),
@@ -21,6 +48,7 @@ def dashboard_view(request):
     )
     return render(request, "guests/dashboard.html", {"stats": stats})
 
+@login_required
 def desk_view(request, desk_id: int):
     form = CheckInForm(request.POST or None)
 
@@ -73,6 +101,7 @@ def desk_view(request, desk_id: int):
     return render(request, "guests/desk.html", {"form": form, "desk_id": desk_id, "last_checkin": last_checkin})
 
 
+@login_required
 def walk_in_view(request, desk_id: int):
     """Tambah tamu walk-in (tidak terdaftar) langsung dari desk."""
     if request.method != "POST":
@@ -128,6 +157,7 @@ def screen_view(request, screen_id: int):
     # Sebentar: template kosong, nanti di Tahap 5
     return render(request, "guests/screen.html", {"screen_id": screen_id})
 
+@login_required
 def api_guest_search(request):
     q = request.GET.get('q', '').strip()
     if not q:
@@ -145,6 +175,7 @@ def api_guest_search(request):
     ]
     return JsonResponse({'results': results})
 
+@login_required
 def guest_list_view(request):
     sort = request.GET.get('sort', 'name')
     dir = request.GET.get('dir', 'asc')

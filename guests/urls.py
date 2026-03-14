@@ -4,6 +4,8 @@ from . import views
 app_name = "guests"
 
 urlpatterns = [
+    path("accounts/login/", views.login_view, name="login"),
+    path("accounts/logout/", views.logout_view, name="logout"),
     path("", views.dashboard_view, name="dashboard"),
     path("desk/<int:desk_id>/", views.desk_view, name="desk"),
     path("screen/<int:screen_id>/", views.screen_view, name="screen"),

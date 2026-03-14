@@ -55,12 +55,45 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "inviteease.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "data" / "db.sqlite3",
+# Database: PostgreSQL if DATABASE_URL is set (Aiven, Supabase, …), else SQLite
+_database_url = os.getenv("DATABASE_URL", "").strip()
+if _database_url:
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=_database_url,
+            conn_max_age=600,
+            ssl_require=True,
+        )
     }
-}
+    # Supabase pooler / transaction mode: short-lived connections
+    if ":6543" in _database_url or "pooler.supabase.com" in _database_url:
+        DATABASES["default"]["CONN_MAX_AGE"] = 0
+
+    # WSL2: DNS sering balikin IPv6 dulu; route IPv6 sering putus → "Network unreachable"
+    # Pakai IPv4 literal sebagai HOST (gethostbyname = hanya record A)
+    if os.getenv("DATABASE_FORCE_IPV4", "1") == "1":
+        import socket
+        from urllib.parse import urlparse
+
+        hostname = DATABASES["default"].get("HOST") or urlparse(_database_url).hostname
+        if hostname:
+            try:
+                ipv4 = socket.gethostbyname(hostname)
+                DATABASES["default"]["HOST"] = ipv4
+                opts = dict(DATABASES["default"].get("OPTIONS") or {})
+                opts.setdefault("sslmode", "require")
+                DATABASES["default"]["OPTIONS"] = opts
+            except OSError:
+                pass
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "data" / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -83,6 +116,11 @@ USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Auth (login wajib untuk desk/dashboard; Screen tetap publik)
+LOGIN_URL = "guests:login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # Static files
 STATIC_URL = "/static/"

@@ -16,7 +16,7 @@ A lightweight self-hosted **guest check-in system** built with **Django + Channe
 | **Admin** (`/admin/`) | • CRUD guests  
 .| • CSV import/export  
 .| • Filters & search |
-| **Dockerized** | One-command deploy with SQLite volume |
+| **Dockerized** | One-command deploy; SQLite by default or **Supabase (Postgres)** via `DATABASE_URL` |
 
 ---
 
@@ -39,6 +39,11 @@ $ make up
 ```bash
 $ make createsuperuser
 ```
+
+**Login aplikasi**  
+Dashboard, Desk, dan Guest List membutuhkan login. Buat user di **Admin → Users → Add user**: isi username/password, **jangan centang "Staff status"** — user itu bisa pakai app tapi **tidak bisa** buka `/admin/`. Yang mengelola tamu & user staff tetap pakai akun superuser/staff.
+
+**Screen** (`/screen/<id>/`) tetap **tanpa login** agar TV bisa buka langsung.
 
 Open:
 - **Desk** → http://localhost:8000/desk/1/
@@ -111,6 +116,36 @@ inviteease/
 | `SECRET_KEY` | `change-me` | Django secret—**change it!** |
 | `ALLOWED_HOSTS` | `*` | Comma-separated list |
 | `CSRF_TRUSTED_ORIGINS` |  | Add your ngrok / domain if using HTTPS proxy |
+| `DATABASE_URL` | *(empty)* | If set, uses **Supabase / PostgreSQL** instead of SQLite |
+
+---
+
+## Supabase (PostgreSQL)
+
+Supabase is managed Postgres. InviteEase stays the same; only the DB backend changes.
+
+1. **Create a project** at [supabase.com](https://supabase.com) → wait until the DB is ready.
+2. **Connection string**  
+   **Project Settings → Database**  
+   - Prefer **URI** with **Direct connection** (port **5432**) or **Session pooler** on **5432** for Django (migrations need a session-capable connection).  
+   - Avoid **Transaction** pooler (6543) for `migrate`; if you must use 6543, set Session mode in Supabase or run migrations against direct 5432.
+3. **`.env`**
+   ```bash
+   DATABASE_URL=postgresql://postgres.[ref]:YOUR_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres
+   ```
+   Special characters in the password must be URL-encoded (e.g. `@` → `%40`).
+4. **Install deps** (includes `psycopg2-binary`): `uv sync`
+5. **Apply schema**
+   ```bash
+   python manage.py migrate
+   ```
+6. **Admin user**: `python manage.py createsuperuser`
+7. **Data from old SQLite** (optional): export with `dumpdata`, or use a one-off SQLite→Postgres tool; fresh deploys often start empty and re-import CSV from Admin.
+
+If `DATABASE_URL` is **not** set, the app still uses SQLite under `data/db.sqlite3`.
+
+**WSL2 / "Network is unreachable"**  
+Supabase DNS sering mengembalikan IPv6 dulu; banyak setup WSL2 tidak punya route IPv6 ke internet. InviteEase secara default memaksa koneksi lewat **IPv4** (`DATABASE_FORCE_IPV4=1`). Kalau perlu matikan: `DATABASE_FORCE_IPV4=0` di `.env`.
 
 ---
 
@@ -139,7 +174,7 @@ WhiteNoise auto-refresh is enabled while `DEBUG=1`, so static changes reflect im
 |----------|----------------|
 | **Offline LAN** | Keep defaults, serve via IP address |
 | **Public HTTPS** | Put Nginx / Caddy in front, or add Let’s Encrypt certs |
-| **Scaling** | Swap `InMemoryChannelLayer` → Redis, mount Postgres instead of SQLite |
+| **Scaling** | Swap `InMemoryChannelLayer` → Redis; use Supabase via `DATABASE_URL` for Postgres |
 
 ---
 
