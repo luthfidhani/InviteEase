@@ -10,7 +10,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY . ./
 
-RUN uv sync --frozen --no-cache
+RUN uv sync --frozen --no-cache \
+    && mkdir -p /app/data \
+    && chmod +x /app/docker/entrypoint.sh
 
+# Render mengarahkan traffic ke $PORT (bukan selalu 8000)
 EXPOSE 8000
 ENTRYPOINT ["/app/docker/entrypoint.sh"]

@@ -117,6 +117,23 @@ inviteease/
 | `ALLOWED_HOSTS` | `*` | Comma-separated list |
 | `CSRF_TRUSTED_ORIGINS` |  | Add your ngrok / domain if using HTTPS proxy |
 | `DATABASE_URL` | *(empty)* | If set, uses **Supabase / PostgreSQL** instead of SQLite |
+| `PORT` | `8000` | Di **Render**, platform set otomatis (mis. `10000`) — entrypoint sudah pakai ini |
+
+---
+
+## Deploy ke Render (Docker)
+
+1. **Dockerfile path:** `docker/Dockerfile` (bukan root).
+2. **Environment variables wajib / disarankan:**
+   - `SECRET_KEY` — random panjang
+   - `DEBUG=0`
+   - `ALLOWED_HOSTS` — hostname Render kamu, mis. `inviteease.onrender.com`
+   - `CSRF_TRUSTED_ORIGINS` — `https://inviteease.onrender.com`
+   - `DATABASE_URL` — dari **Render PostgreSQL** (disarankan; tanpa ini pakai SQLite di disk ephemeral)
+   - `DATABASE_FORCE_IPV4=0` — di Render jangan paksa IPv4 (bisa putus SSL / koneksi Postgres)
+3. **Jangan** isi **Docker Command** dengan perintah yang bentrok; biarkan default **ENTRYPOINT** (`entrypoint.sh` sudah `migrate` + `daphne` di **`$PORT`**).
+
+Kalau deploy masih gagal, buka **Logs** di dashboard Render — baris error Python/shell muncul sebelum exit.
 
 ---
 
