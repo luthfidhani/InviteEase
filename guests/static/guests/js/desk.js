@@ -1,52 +1,71 @@
 /* Desk page QR scanner + autocomplete */
 (function () {
-    const btn   = document.getElementById("btnScan");
-    const input = document.querySelector("input[name='query']");
-    const qrDiv = document.getElementById("qr-reader");
-    const acList = document.getElementById("autocomplete-list");
-  
-    if (!btn) return;          // wrong page safety
+    const btn          = document.getElementById("btnScan");
+    const btnClose     = document.getElementById("btnCloseModal");
+    const backdrop     = document.getElementById("qr-backdrop");
+    const modal        = document.getElementById("qr-modal");
+    const input        = document.querySelector("input[name='query']");
+    const acList       = document.getElementById("autocomplete-list");
+
+    // --- Walk-in modal ---
+    const btnWalkIn      = document.getElementById("btnWalkIn");
+    const walkinModal    = document.getElementById("walkin-modal");
+    const walkinBackdrop = document.getElementById("walkin-backdrop");
+    const btnCloseWalkIn = document.getElementById("btnCloseWalkIn");
+
+    if (btnWalkIn) {
+        btnWalkIn.addEventListener("click", () => {
+            walkinModal.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+            walkinModal.querySelector("input[name='name']").focus();
+        });
+    }
+    function closeWalkIn() {
+        if (walkinModal) {
+            walkinModal.classList.add("hidden");
+            document.body.style.overflow = "";
+        }
+    }
+    if (btnCloseWalkIn) btnCloseWalkIn.addEventListener("click", closeWalkIn);
+    if (walkinBackdrop) walkinBackdrop.addEventListener("click", closeWalkIn);
+
+    if (!btn) return;
   
     let scanner = null;
     let isScanning = false;
     let acTimeout = null;
   
-    btn.addEventListener("click", () => {
-      // toggling
-      if (!isScanning) {
-        startScanner();
-      } else {
-        stopScanner();
-      }
-    });
+    btn.addEventListener("click", () => startScanner());
+    btnClose.addEventListener("click", () => stopScanner());
+    backdrop.addEventListener("click", () => stopScanner());
   
+    function openModal() {
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      modal.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
     function startScanner() {
-      // Show QR reader with Tailwind classes
-      qrDiv.classList.remove("hidden");
-      qrDiv.classList.add("block");
-      btn.innerHTML = "<i class='fa-solid fa-stop'></i> Stop Scan";
-      btn.classList.remove("from-gray-500", "to-gray-600", "hover:from-gray-600", "hover:to-gray-700");
-      btn.classList.add("from-red-500", "to-red-600", "hover:from-red-600", "hover:to-red-700");
+      openModal();
       isScanning = true;
   
       scanner = new Html5Qrcode("qr-reader");
       scanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
-          // Got a code!
           stopScanner();
           input.value = decodedText.trim();
-          // Use the form's submit button to ensure CSRF token is included
           const submitBtn = document.querySelector('button[type="submit"]');
           if (submitBtn) {
             submitBtn.click();
           } else {
-            // Fallback to form submission if button not found
             const form = document.querySelector('form');
-            if (form) {
-              form.submit();
-            }
+            if (form) form.submit();
           }
         },
         (err) => console.debug(err)
@@ -65,14 +84,8 @@
           console.error("Error stopping scanner:", err);
         });
       }
-      
-      // Hide QR reader with Tailwind classes
-      qrDiv.classList.add("hidden");
-      qrDiv.classList.remove("block");
-      btn.innerHTML = "<i class='fa-solid fa-qrcode'></i> Scan QR";
-      btn.classList.remove("from-red-500", "to-red-600", "hover:from-red-600", "hover:to-red-700");
-      btn.classList.add("from-gray-500", "to-gray-600", "hover:from-gray-600", "hover:to-gray-700");
       isScanning = false;
+      closeModal();
     }
 
     // --- Autocomplete logic ---

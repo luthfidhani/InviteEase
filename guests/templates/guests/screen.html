@@ -4,41 +4,298 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>InviteEase · Screen {{ screen_id }}</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: {
-              500: '#3b82f6',
-              600: '#2563eb',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <!-- Animate.css (efek slide / fade) -->
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Great+Vibes&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+
+  <!-- Animate.css -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
 
-  <!-- Local screen logic -->
+  <!-- Screen logic -->
   <script src="{% static 'guests/js/screen.js' %}"></script>
+
+  <style>
+    :root {
+      --gold:       #c9a55a;
+      --gold-light: #e8d5a3;
+      --cream:      #f5ead8;
+      --dark:       #0f0b07;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--dark);
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* ── Bokeh blobs ── */
+    .bokeh {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Corner ornaments ── */
+    .corner {
+      position: fixed;
+      width: 220px;
+      height: 220px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ── Divider ── */
+    .gold-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .gold-divider::before,
+    .gold-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+
+    /* ── Idle box ── */
+    #idleBox {
+      transition: opacity 1s ease;
+    }
+
+    /* ── Welcome box ── */
+    #welcomeBox {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* ── Gentle breathing animation for idle ── */
+    @keyframes breathe {
+      0%, 100% { opacity: 0.7; transform: scale(1);   }
+      50%       { opacity: 1;   transform: scale(1.02); }
+    }
+    .breathe { animation: breathe 5s ease-in-out infinite; }
+
+    /* ── Particle dots floating (very subtle) ── */
+    @keyframes floatUp {
+      0%   { transform: translateY(0)   opacity(0); opacity: 0; }
+      10%  { opacity: 0.4; }
+      90%  { opacity: 0.2; }
+      100% { transform: translateY(-80px); opacity: 0; }
+    }
+    .particle {
+      position: fixed;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--gold);
+      pointer-events: none;
+      z-index: 0;
+      animation: floatUp linear infinite;
+    }
+
+    /* ── Status badge styles ── */
+    .badge-vvip    { color: #e8c4e0; }
+    .badge-vip     { color: var(--gold-light); }
+    .badge-reguler { color: #a8c4a0; }
+
+    /* ── Typography helpers ── */
+    .font-script { font-family: 'Great Vibes', cursive; }
+    .font-serif  { font-family: 'Cormorant Garamond', serif; }
+    .font-sans   { font-family: 'Montserrat', sans-serif; }
+  </style>
 </head>
 
-<body class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-indigo-100">
-  <div id="welcomeBox" class="text-center opacity-0 animate__animated" style="transition: opacity 0.5s;">
-    <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-6 tracking-wide drop-shadow-lg">Selamat Datang</h1>
-    <h1 id="guestName" class="text-6xl md:text-8xl font-extrabold mb-6 text-primary-600 drop-shadow-xl"></h1>
-    <h2 id="guestStatus" class="text-3xl md:text-5xl font-semibold mb-4 text-gray-700"></h2>
-    <p id="guestNotes" class="text-2xl md:text-3xl italic text-gray-500"></p>
+<body>
+
+  <!-- ── Bokeh background ── -->
+  <div class="bokeh" style="width:500px;height:500px;background:#8a6020;opacity:0.10;top:-150px;left:-150px;"></div>
+  <div class="bokeh" style="width:400px;height:400px;background:#6a4818;opacity:0.12;bottom:-100px;right:-100px;"></div>
+  <div class="bokeh" style="width:250px;height:250px;background:#c9a55a;opacity:0.06;top:40%;left:60%;"></div>
+
+  <!-- ── Floating particles ── -->
+  <div class="particle" style="left:10%;bottom:0;animation-duration:8s; animation-delay:0s;"></div>
+  <div class="particle" style="left:25%;bottom:0;animation-duration:12s;animation-delay:3s;width:2px;height:2px;opacity:0.5;"></div>
+  <div class="particle" style="left:50%;bottom:0;animation-duration:10s;animation-delay:1s;"></div>
+  <div class="particle" style="left:70%;bottom:0;animation-duration:14s;animation-delay:5s;width:2px;height:2px;opacity:0.4;"></div>
+  <div class="particle" style="left:85%;bottom:0;animation-duration:9s; animation-delay:2s;"></div>
+
+  <!-- ── Corner ornaments ── -->
+  <!-- Top-left -->
+  <svg class="corner" style="top:0;left:0;" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="2" y1="2" x2="140" y2="2"  stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <line x1="2" y1="2" x2="2"   y2="140" stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <rect x="-3" y="-3" width="7" height="7" transform="rotate(45 2 2)"   fill="#c9a55a" opacity="0.8"/>
+    <rect x="136" y="-3" width="6" height="6" transform="rotate(45 140 2)" fill="#c9a55a" opacity="0.4"/>
+    <rect x="-3" y="136" width="6" height="6" transform="rotate(45 2 140)" fill="#c9a55a" opacity="0.4"/>
+    <!-- vine diagonal 1 -->
+    <path d="M 18,2 C 20,22 28,34 38,42 C 48,50 58,54 66,68 C 74,82 72,96 78,108" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <!-- vine diagonal 2 -->
+    <path d="M 2,18 C 22,20 34,28 42,38 C 50,48 54,58 68,66 C 82,74 96,72 108,78" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <!-- leaves on vine 1 -->
+    <path d="M 38,42 C 29,34 20,38 24,48 C 28,56 38,52 38,42 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 66,68 C 57,58 48,62 52,72 C 56,80 66,76 66,68 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <!-- leaves on vine 2 -->
+    <path d="M 42,38 C 34,29 38,20 48,24 C 56,28 52,38 42,38 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 68,66 C 58,57 62,48 72,52 C 80,56 76,66 68,66 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <!-- dots -->
+    <circle cx="78"  cy="108" r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="108" cy="78"  r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="26"  cy="8"   r="1.8" fill="#c9a55a" opacity="0.35"/>
+    <circle cx="8"   cy="26"  r="1.8" fill="#c9a55a" opacity="0.35"/>
+  </svg>
+
+  <!-- Top-right (mirror X) -->
+  <svg class="corner" style="top:0;right:0;transform:scaleX(-1);" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="2" y1="2" x2="140" y2="2"  stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <line x1="2" y1="2" x2="2"   y2="140" stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <rect x="-3" y="-3" width="7" height="7" transform="rotate(45 2 2)"   fill="#c9a55a" opacity="0.8"/>
+    <rect x="136" y="-3" width="6" height="6" transform="rotate(45 140 2)" fill="#c9a55a" opacity="0.4"/>
+    <rect x="-3" y="136" width="6" height="6" transform="rotate(45 2 140)" fill="#c9a55a" opacity="0.4"/>
+    <path d="M 18,2 C 20,22 28,34 38,42 C 48,50 58,54 66,68 C 74,82 72,96 78,108" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <path d="M 2,18 C 22,20 34,28 42,38 C 50,48 54,58 68,66 C 82,74 96,72 108,78" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <path d="M 38,42 C 29,34 20,38 24,48 C 28,56 38,52 38,42 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 66,68 C 57,58 48,62 52,72 C 56,80 66,76 66,68 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 42,38 C 34,29 38,20 48,24 C 56,28 52,38 42,38 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 68,66 C 58,57 62,48 72,52 C 80,56 76,66 68,66 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <circle cx="78"  cy="108" r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="108" cy="78"  r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="26"  cy="8"   r="1.8" fill="#c9a55a" opacity="0.35"/>
+    <circle cx="8"   cy="26"  r="1.8" fill="#c9a55a" opacity="0.35"/>
+  </svg>
+
+  <!-- Bottom-left (mirror Y) -->
+  <svg class="corner" style="bottom:0;left:0;transform:scaleY(-1);" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="2" y1="2" x2="140" y2="2"  stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <line x1="2" y1="2" x2="2"   y2="140" stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <rect x="-3" y="-3" width="7" height="7" transform="rotate(45 2 2)"   fill="#c9a55a" opacity="0.8"/>
+    <rect x="136" y="-3" width="6" height="6" transform="rotate(45 140 2)" fill="#c9a55a" opacity="0.4"/>
+    <rect x="-3" y="136" width="6" height="6" transform="rotate(45 2 140)" fill="#c9a55a" opacity="0.4"/>
+    <path d="M 18,2 C 20,22 28,34 38,42 C 48,50 58,54 66,68 C 74,82 72,96 78,108" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <path d="M 2,18 C 22,20 34,28 42,38 C 50,48 54,58 68,66 C 82,74 96,72 108,78" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <path d="M 38,42 C 29,34 20,38 24,48 C 28,56 38,52 38,42 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 66,68 C 57,58 48,62 52,72 C 56,80 66,76 66,68 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 42,38 C 34,29 38,20 48,24 C 56,28 52,38 42,38 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 68,66 C 58,57 62,48 72,52 C 80,56 76,66 68,66 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <circle cx="78"  cy="108" r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="108" cy="78"  r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="26"  cy="8"   r="1.8" fill="#c9a55a" opacity="0.35"/>
+    <circle cx="8"   cy="26"  r="1.8" fill="#c9a55a" opacity="0.35"/>
+  </svg>
+
+  <!-- Bottom-right (mirror X+Y) -->
+  <svg class="corner" style="bottom:0;right:0;transform:scale(-1,-1);" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="2" y1="2" x2="140" y2="2"  stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <line x1="2" y1="2" x2="2"   y2="140" stroke="#c9a55a" stroke-width="0.8" opacity="0.5"/>
+    <rect x="-3" y="-3" width="7" height="7" transform="rotate(45 2 2)"   fill="#c9a55a" opacity="0.8"/>
+    <rect x="136" y="-3" width="6" height="6" transform="rotate(45 140 2)" fill="#c9a55a" opacity="0.4"/>
+    <rect x="-3" y="136" width="6" height="6" transform="rotate(45 2 140)" fill="#c9a55a" opacity="0.4"/>
+    <path d="M 18,2 C 20,22 28,34 38,42 C 48,50 58,54 66,68 C 74,82 72,96 78,108" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <path d="M 2,18 C 22,20 34,28 42,38 C 50,48 54,58 68,66 C 82,74 96,72 108,78" stroke="#c9a55a" stroke-width="0.7" fill="none" opacity="0.75"/>
+    <path d="M 38,42 C 29,34 20,38 24,48 C 28,56 38,52 38,42 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 66,68 C 57,58 48,62 52,72 C 56,80 66,76 66,68 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 42,38 C 34,29 38,20 48,24 C 56,28 52,38 42,38 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <path d="M 68,66 C 58,57 62,48 72,52 C 80,56 76,66 68,66 Z" stroke="#c9a55a" stroke-width="0.55" fill="none" opacity="0.65"/>
+    <circle cx="78"  cy="108" r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="108" cy="78"  r="2.5" fill="#c9a55a" opacity="0.5"/>
+    <circle cx="26"  cy="8"   r="1.8" fill="#c9a55a" opacity="0.35"/>
+    <circle cx="8"   cy="26"  r="1.8" fill="#c9a55a" opacity="0.35"/>
+  </svg>
+
+  <!-- ── Main stage ── -->
+  <div class="relative z-10 text-center w-full px-8" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
+
+    <!-- Idle state -->
+    <div id="idleBox" style="transition:opacity 1s ease;">
+      <p class="font-serif" style="color:var(--gold);opacity:0.45;letter-spacing:0.4em;font-size:clamp(0.7rem,1.2vw,1rem);text-transform:uppercase;margin-bottom:2rem;">
+        The Wedding of
+      </p>
+      <div class="breathe">
+        <p class="font-script" style="color:var(--gold);font-size:clamp(4rem,10vw,8rem);line-height:1.1;text-shadow:0 0 60px rgba(201,165,90,0.3);">
+          Luthfi &amp; Evi
+        </p>
+      </div>
+      <div class="gold-divider" style="margin:1.8rem auto;">
+        <span style="color:var(--gold);font-size:1.1rem;">✦</span>
+      </div>
+      <p class="font-serif" style="color:var(--cream);opacity:0.35;letter-spacing:0.35em;font-size:clamp(0.7rem,1.4vw,1rem);text-transform:uppercase;">
+        Ahlan Wa Sahlan &nbsp;·&nbsp; Selamat Datang
+      </p>
+    </div>
+
+    <!-- Welcome box (muncul saat tamu scan) -->
+    <div id="welcomeBox" class="animate__animated" style="opacity:0;transition:opacity 0.5s;position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+      <p class="font-serif" style="color:var(--cream);opacity:0.5;letter-spacing:0.45em;font-size:clamp(0.7rem,1.3vw,1rem);text-transform:uppercase;margin-bottom:1.5rem;">
+        Selamat Datang
+      </p>
+      <div class="gold-divider" style="margin-bottom:1.8rem;">
+        <span style="color:var(--gold);font-size:1.1rem;">✦</span>
+      </div>
+      <h1 id="guestName" class="font-script"
+          style="color:var(--gold);font-size:clamp(4.5rem,12vw,10rem);line-height:1.1;text-shadow:0 0 80px rgba(201,165,90,0.4);margin-bottom:1.5rem;font-weight:400;"></h1>
+      <h2 id="guestStatus" class="font-serif"
+          style="font-size:clamp(1.2rem,2.5vw,2rem);letter-spacing:0.3em;text-transform:uppercase;font-weight:400;margin-bottom:0.8rem;"></h2>
+      <p id="guestNotes" class="font-sans"
+         style="color:var(--cream);opacity:0.4;font-size:clamp(0.75rem,1.4vw,1rem);font-weight:200;letter-spacing:0.2em;"></p>
+    </div>
+
+  </div>
+
+  <!-- ── Couple & date watermark (bottom-right, klik untuk fullscreen) ── -->
+  <div id="fsBtn" onclick="toggleFullscreen()" title="Klik untuk fullscreen"
+       style="position:fixed;bottom:2rem;right:2.5rem;text-align:right;z-index:10;cursor:pointer;user-select:none;">
+    <p class="font-script" style="color:var(--gold);opacity:0.45;font-size:clamp(1.8rem,3vw,2.5rem);line-height:1.2;transition:opacity 0.3s;">
+      Luthfi &amp; Evi
+    </p>
+    <p class="font-serif" style="color:var(--gold-light);opacity:0.3;font-size:clamp(0.6rem,1vw,0.85rem);letter-spacing:0.3em;text-transform:uppercase;margin-top:2px;transition:opacity 0.3s;">
+      26 April 2026
+    </p>
+    <p id="fsHint" class="font-sans" style="color:var(--gold);opacity:0;font-size:0.65rem;letter-spacing:0.15em;margin-top:4px;transition:opacity 0.3s;text-transform:uppercase;">
+      ⛶ Fullscreen
+    </p>
   </div>
 
   <script>
-    initScreen("{{ screen_id }}");   // fungsi di screen.js
+    initScreen("{{ screen_id }}");
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Tampilkan hint saat hover
+    const fsBtn  = document.getElementById("fsBtn");
+    const fsHint = document.getElementById("fsHint");
+    fsBtn.addEventListener("mouseenter", () => fsHint.style.opacity = "0.6");
+    fsBtn.addEventListener("mouseleave", () => fsHint.style.opacity = "0");
+
+    // Update teks hint sesuai state fullscreen
+    //document.addEventListener("fullscreenchange", () => {
+      //fsHint.textContent = document.fullscreenElement ? "✕ Exit Fullscreen" : "⛶ Fullscreen";
+    //});
   </script>
 </body>
 
